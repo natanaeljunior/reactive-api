@@ -31,7 +31,7 @@ public class FooController {
     }
 
     @GetMapping("/foo/{id}")
-    public Mono<Foo> getAPIById(@PathVariable("id") int id) {
+    public Mono<Foo> getFooById(@PathVariable("id") int id) {
         return fooRepository.findById(id);
     }
     
