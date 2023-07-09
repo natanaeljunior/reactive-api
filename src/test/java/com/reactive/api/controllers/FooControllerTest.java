@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 import java.time.Duration;
 @WebFluxTest(FooController.class)
@@ -21,6 +22,24 @@ public class FooControllerTest {
     @MockBean
     private FooRepository fooRepository;
 
+
+
+    @Test
+    public void testGetFooEvents() {
+        FooController fooController = new FooController(fooRepository);
+
+        Flux<Foo> fooFlux = fooController.getFooEvents().take(5);
+
+        StepVerifier.create(fooFlux)
+                .expectNextMatches(foo -> foo.getId() == 0 && foo.getName().equals("Foo 0"))
+                .expectNextMatches(foo -> foo.getId() == 1 && foo.getName().equals("Foo 1"))
+                .expectNextMatches(foo -> foo.getId() == 2 && foo.getName().equals("Foo 2"))
+                .expectNextMatches(foo -> foo.getId() == 3 && foo.getName().equals("Foo 3"))
+                .expectNextMatches(foo -> foo.getId() == 4 && foo.getName().equals("Foo 4"))
+                .expectComplete()
+                .verify();
+    }
+    
     @Test
     public void testGetFoo() {
         Foo foo1 = new Foo(1, "Foo 1");
@@ -30,7 +49,7 @@ public class FooControllerTest {
         Mockito.when(fooRepository.findAll()).thenReturn(fooFlux);
 
         webTestClient.get()
-                .uri("/api/foo")
+                .uri("/foo/")
                 .exchange()
                 .expectStatus().isOk()
                 .expectBodyList(Foo.class)
@@ -45,7 +64,7 @@ public class FooControllerTest {
         Mockito.when(fooRepository.findById(id)).thenReturn(Mono.just(foo));
 
         webTestClient.get()
-                .uri("/api/foo/{id}", id)
+                .uri("/foo/{id}", id)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody(Foo.class);
